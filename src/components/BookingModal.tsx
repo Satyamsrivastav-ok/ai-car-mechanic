@@ -5,12 +5,12 @@ import {
   Clock,
   Car,
   CheckCircle2,
-  DollarSign,
   MapPin,
   User,
   Phone,
   Mail,
   FileText,
+  Info,
   ShieldCheck,
   Star,
   Printer,
@@ -29,6 +29,7 @@ interface BookingModalProps {
   onClose: () => void;
   diagnosis: DiagnosticReport;
   vehicle: VehicleProfile;
+  conversationId?: string;
   onBookingSuccess: (booking: MechanicBooking) => void;
   existingBooking?: MechanicBooking;
 }
@@ -38,9 +39,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   onClose,
   diagnosis,
   vehicle,
+  conversationId,
   onBookingSuccess,
   existingBooking,
 }) => {
+  const formatIndianDate = (value: string) => {
+    const [year, month, day] = value.split('-');
+    return year && month && day ? `${day}/${month}/${year}` : value;
+  };
+
   // If an existing booking is already present, show confirmation screen immediately
   const [confirmedBooking, setConfirmedBooking] = useState<MechanicBooking | null>(
     existingBooking || null
@@ -51,10 +58,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   >(diagnosis.canDriveSafely ? 'mobile_mechanic' : 'towing_and_repair');
 
   // Form states
-  const [customerName, setCustomerName] = useState('Alex Morgan');
-  const [customerPhone, setCustomerPhone] = useState('(555) 234-5678');
-  const [customerEmail, setCustomerEmail] = useState('alex.morgan@example.com');
-  const [serviceAddress, setServiceAddress] = useState('742 Evergreen Terrace, Springfield');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('+91 ');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [serviceAddress, setServiceAddress] = useState('');
   const [preferredDate, setPreferredDate] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -62,7 +69,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   });
   const [preferredTime, setPreferredTime] = useState('Morning (8:00 AM - 11:00 AM)');
   const [notes, setNotes] = useState(
-    'Please inspect brake pads and verify whether rotors need machining or replacement.'
+    ''
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,6 +83,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setSubmitError(null);
 
     try {
+      if (!conversationId) throw new Error('Send a chat message before booking an appointment.');
       const newBooking = await apiClient.createBooking({
         customerName,
         customerPhone,
@@ -93,9 +101,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         estimatedCost: {
           min: diagnosis.estimatedCost.min,
           max: diagnosis.estimatedCost.max,
-          currency: 'USD',
+          currency: 'INR',
         },
-      });
+      }, conversationId);
 
       setConfirmedBooking(newBooking);
       onBookingSuccess(newBooking);
@@ -145,8 +153,8 @@ END:VCALENDAR`;
               </h3>
               <p className="text-xs text-slate-400">
                 {confirmedBooking
-                  ? `Booking Reference #${confirmedBooking.bookingReference}`
-                  : 'Authorized ASE Diagnostic & Repair Service'}
+                  ? `Booking ID #${confirmedBooking.id}`
+                  : 'Delhi NCR car inspection request'}
               </p>
             </div>
           </div>
@@ -167,12 +175,12 @@ END:VCALENDAR`;
                 <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-3 ring-8 ring-emerald-500/10">
                   <CheckCircle2 className="w-9 h-9" />
                 </div>
-                <h4 className="text-xl font-bold text-white">Your Service Is Booked!</h4>
+                <h4 className="text-xl font-bold text-white">Your mechanic booking has been created successfully.</h4>
                 <p className="text-xs text-slate-400 max-w-md mt-1">
-                  A work order has been generated with your preliminary diagnosis attached. Your technician will arrive with the required parts and diagnostic scan tools.
+                  Your request has been sent to the Django booking service. Review the submitted details below.
                 </p>
                 <div className="mt-3 inline-flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-full border border-slate-800 text-amber-400 font-mono text-sm font-bold">
-                  Reference: {confirmedBooking.bookingReference}
+                  Booking ID: {confirmedBooking.id}
                 </div>
               </div>
 
@@ -215,23 +223,10 @@ END:VCALENDAR`;
                     Appointment Details
                   </span>
                   <div className="text-xs font-semibold text-slate-200 flex items-center gap-1.5 mb-1">
-                    <Calendar className="w-3.5 h-3.5 text-amber-400" /> {confirmedBooking.preferredDate}
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" /> {formatIndianDate(confirmedBooking.preferredDate)}
                   </div>
                   <div className="text-xs text-slate-300 flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-blue-400" /> {confirmedBooking.preferredTime}
-                  </div>
-                </div>
-
-                <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
-                  <span className="text-[11px] text-slate-400 uppercase font-semibold block mb-1">
-                    Location & Type
-                  </span>
-                  <div className="text-xs font-semibold text-slate-200 capitalize mb-1">
-                    {confirmedBooking.serviceType.replace(/_/g, ' ')}
-                  </div>
-                  <div className="text-xs text-slate-300 flex items-start gap-1.5 truncate">
-                    <MapPin className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
-                    <span className="truncate">{confirmedBooking.serviceLocation}</span>
                   </div>
                 </div>
 
@@ -243,20 +238,14 @@ END:VCALENDAR`;
                     {confirmedBooking.vehicle.year} {confirmedBooking.vehicle.make} {confirmedBooking.vehicle.model}
                   </div>
                   <div className="text-xs text-slate-400">
-                    Odometer: {confirmedBooking.vehicle.mileage} miles
+                    Odometer: {confirmedBooking.vehicle.mileage} km
                   </div>
                 </div>
 
                 <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
-                  <span className="text-[11px] text-slate-400 uppercase font-semibold block mb-1">
-                    Attached Work Order
-                  </span>
-                  <div className="text-xs font-semibold text-amber-400 truncate">
-                    {diagnosis.mostLikelyIssue}
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    Est. Range: ${confirmedBooking.estimatedCost.min} - ${confirmedBooking.estimatedCost.max}
-                  </div>
+                  <span className="text-[11px] text-slate-400 uppercase font-semibold block mb-1">Issue</span>
+                  <div className="text-xs font-semibold text-amber-400">{confirmedBooking.notes || diagnosis.mostLikelyIssue}</div>
+                  <div className="text-xs text-slate-400 mt-1">Status: {confirmedBooking.status}</div>
                 </div>
               </div>
 
@@ -306,8 +295,8 @@ END:VCALENDAR`;
                       {vehicle.year} {vehicle.make} {vehicle.model}
                     </span>
                     <span className="flex items-center gap-1">
-                      <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                      Est. ${diagnosis.estimatedCost.min} - ${diagnosis.estimatedCost.max}
+                      <Info className="w-3.5 h-3.5 text-emerald-400" />
+                      Pricing will be confirmed after inspection.
                     </span>
                   </div>
                 </div>
@@ -407,7 +396,7 @@ END:VCALENDAR`;
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-amber-400" /> Preferred Date
                   </label>
-                  <input
+                      <input
                     type="date"
                     required
                     value={preferredDate}
@@ -460,7 +449,7 @@ END:VCALENDAR`;
                       required
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="(555) 000-0000"
+                      placeholder="+91 98XXXXXXXX"
                       className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-hidden focus:border-amber-500"
                     />
                   </div>
@@ -469,12 +458,12 @@ END:VCALENDAR`;
                     <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center gap-1">
                       <Mail className="w-3 h-3 text-slate-400" /> Email Address
                     </label>
-                    <input
+                      <input
                       type="email"
                       required
                       value={customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
-                      placeholder="name@example.com"
+                      placeholder="name@example.com (optional)"
                       className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-hidden focus:border-amber-500"
                     />
                   </div>
@@ -514,7 +503,7 @@ END:VCALENDAR`;
               <div className="bg-slate-950/40 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                  Includes 12-Month / 12,000-Mile Certified Warranty on all replaced parts & labor.
+                      Service details are reviewed by the mechanic before inspection.
                 </span>
                 <span className="text-slate-500 hidden sm:inline">No charge until diagnosis verified</span>
               </div>

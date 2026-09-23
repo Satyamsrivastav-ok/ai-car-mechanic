@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   AlertOctagon,
   Clock,
-  DollarSign,
   Wrench,
   ShieldAlert,
   Calendar,
@@ -207,7 +206,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           </div>
         </div>
 
-        {/* Recommended Repair & Estimated Cost */}
+        {/* Recommended Repair & Cost Availability */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
           <div className="md:col-span-2 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
             <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
@@ -220,16 +219,11 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
           <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
-              <DollarSign className="w-3.5 h-3.5 text-amber-400" /> Estimated Cost Range
+              <Info className="w-3.5 h-3.5 text-amber-400" /> Service Cost
             </span>
             <div>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-amber-400">
-                ${diagnosis.estimatedCost.min} - ${diagnosis.estimatedCost.max}
-              </div>
-              <div className="text-[11px] text-slate-400 mt-1 flex justify-between">
-                <span>Parts: ~${diagnosis.estimatedCost.partsEstimate}</span>
-                <span>Labor: ~${diagnosis.estimatedCost.laborEstimate}</span>
-              </div>
+              <div className="text-sm font-semibold text-amber-400">To be confirmed after inspection</div>
+              <div className="text-[11px] text-slate-400 mt-1">No estimate was returned by the backend.</div>
             </div>
           </div>
         </div>

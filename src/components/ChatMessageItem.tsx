@@ -64,7 +64,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-semibold text-slate-300">
-              {isAssistant ? 'Dan Kowalski (ASE Master Tech)' : 'You'}
+              {isAssistant ? 'AI Car Mechanic' : 'You'}
             </span>
             <span className="text-[10px] text-slate-500">
               {new Date(message.timestamp).toLocaleTimeString([], {
@@ -107,7 +107,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
             {message.attachments && message.attachments.length > 0 && (
               <div className="mt-4 pt-3 border-t border-slate-700/60 space-y-2.5">
                 <span className="text-[11px] font-semibold tracking-wider uppercase text-slate-400 block">
-                  Attached Vehicle Media ({message.attachments.length})
+                  Shared vehicle media ({message.attachments.length})
                 </span>
                 <div className="grid grid-cols-1 gap-2.5">
                   {message.attachments.map((attachment) => (

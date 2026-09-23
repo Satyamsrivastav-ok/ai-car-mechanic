@@ -61,7 +61,7 @@ export function isAutomotiveRelated(text: string, attachments: MediaAttachment[]
   if (hasCarWord) return true;
 
   // Words implying physical mechanical vehicle behavior
-  if (/(stalls|won't start|noise|loud|shaking|leaking|burning|dashboard|miles)/i.test(lower)) {
+  if (/(stalls|won't start|noise|loud|shaking|leaking|burning|dashboard|miles|kilometres|kilometers)/i.test(lower)) {
     return true;
   }
 
@@ -143,7 +143,7 @@ export class MechanicAiService {
 
     // Evaluate if user is providing answers to previous follow-ups or requesting diagnosis
     const isFollowupAnswer =
-      /when|only|always|cold|hot|stops|mph|highway|idle|turning|miles|yes|no|steady|flashing/i.test(cleanText) ||
+      /when|only|always|cold|hot|stops|mph|highway|idle|turning|miles|kilometres|kilometers|yes|no|steady|flashing/i.test(cleanText) ||
       cleanText.length > 50 ||
       attachments.length > 0;
 
@@ -208,13 +208,13 @@ Before I jump to conclusions, I need to pinpoint the exact circumstances:
       followUps = [
         'Does it happen only during light pedal pressure or heavy stops?',
         'Do you feel any vibration or pulsing through the brake pedal or steering wheel?',
-        'Roughly how many miles have been driven since the last brake replacement?',
+        'Roughly how many kilometres have been driven since the last brake replacement?',
       ];
       suggestedReplies = [
         'Only happens during light braking at low speeds',
         'Harsh metallic grinding sound, pedal vibrates slightly',
         'Brake pedal feels very spongy and goes down far',
-        'About 30,000 miles since last brake job',
+        'About 30,000 kilometres since last brake job',
       ];
     } else if (/check engine|engine light|cel|misfire|shaking/i.test(allText)) {
       responseText = `Understood. A check engine warning on ${carName} is the computer's way of flagging a sensor threshold anomaly or combustion issue.
@@ -291,7 +291,7 @@ Let's gather some vital signs:
       suggestedReplies = [
         'Started happening a few days ago, happens every drive',
         'Only happens when the car has been parked overnight (cold)',
-        'Vehicle has around 75,000 miles',
+        'Vehicle has around 75,000 kilometres',
         'No warning lights on dash yet, just the unusual sound',
       ];
     }
@@ -362,7 +362,7 @@ Let's gather some vital signs:
             probability: 'High',
             percentage: 82,
             description: 'The built-in acoustic squealer clip (wear indicator) is contacting the brake disc to alert the driver before metal backing plate ruin.',
-            symptomsMatch: ['High-pitched squeal under light braking', 'Fades when pressing harder', 'Mileage > 35,000'],
+            symptomsMatch: ['High-pitched squeal under light braking', 'Fades when pressing harder', 'Odometer above 35,000 km'],
           },
           {
             cause: 'Scored / Grooved Brake Rotors (Discs)',
@@ -388,7 +388,7 @@ Let's gather some vital signs:
         estimatedCost: {
           min: 240,
           max: 480,
-          currency: 'USD',
+          currency: 'INR',
           partsEstimate: 160,
           laborEstimate: 190,
         },
@@ -438,7 +438,7 @@ When brake pad friction material wears down to approximately 2mm (roughly the th
         estimatedCost: {
           min: 190,
           max: 420,
-          currency: 'USD',
+          currency: 'INR',
           partsEstimate: 120,
           laborEstimate: 150,
         },
@@ -488,7 +488,7 @@ Unlike a solid check engine light, a blinking light means raw fuel is being dump
         estimatedCost: {
           min: 120,
           max: 350,
-          currency: 'USD',
+          currency: 'INR',
           partsEstimate: 60,
           laborEstimate: 140,
         },
@@ -538,7 +538,7 @@ The sharp, rhythmic cadence that speeds up linearly with engine RPM points to a 
         estimatedCost: {
           min: 220,
           max: 560,
-          currency: 'USD',
+          currency: 'INR',
           partsEstimate: 140,
           laborEstimate: 210,
         },
@@ -589,7 +589,7 @@ Because modern engines use lightweight aluminum cylinder heads, running hot even
         estimatedCost: {
           min: 150,
           max: 380,
-          currency: 'USD',
+          currency: 'INR',
           partsEstimate: 90,
           laborEstimate: 150,
         },
@@ -618,7 +618,7 @@ You can review the likely causes, estimated repair ranges, and click **"Book Cer
       diagnosis,
       suggestedReplies: [
         'How much will the parts and labor cost exactly?',
-        'Can I drive it 15 miles to work tomorrow?',
+        'Can I drive it 15 km to work tomorrow?',
         'What specific questions should I ask the mechanic?',
         'Book an appointment to inspect this',
       ],

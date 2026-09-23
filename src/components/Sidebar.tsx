@@ -95,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {currentVehicle.year} {currentVehicle.make} {currentVehicle.model}
           </div>
           <div className="text-[11px] text-slate-400">
-            Odometer: {currentVehicle.mileage} miles
+            Odometer: {currentVehicle.mileage} km
           </div>
         </div>
 

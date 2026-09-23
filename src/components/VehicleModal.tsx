@@ -103,7 +103,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Odometer Mileage</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Odometer (km)</label>
               <input
                 type="text"
                 required

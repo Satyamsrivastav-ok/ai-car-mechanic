@@ -90,6 +90,7 @@ export const MediaUploaderModal: React.FC<MediaUploaderModalProps> = ({
         fileName: file.name,
         fileSize: file.size,
         mimeType: file.type || `${type}/*`,
+        file,
         description: `Uploaded ${file.name}`,
       };
       setIsProcessing(false);
@@ -158,6 +159,9 @@ export const MediaUploaderModal: React.FC<MediaUploaderModalProps> = ({
         fileName: `recorded_engine_sound_${recordingDuration}s.webm`,
         fileSize: recordedAudioBlob.size,
         mimeType: 'audio/webm',
+        file: new File([recordedAudioBlob], `recorded_engine_sound_${recordingDuration}s.webm`, {
+          type: 'audio/webm',
+        }),
         duration: recordingDuration,
         description: `Live recorded vehicle sound (${recordingDuration} seconds)`,
       };

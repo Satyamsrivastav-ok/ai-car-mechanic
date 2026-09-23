@@ -15,6 +15,7 @@ export interface MediaAttachment {
   duration?: number; // for audio/video in seconds
   thumbnailUrl?: string;
   description?: string;
+  file?: File;
 }
 
 export type UrgencyLevel = 'Low' | 'Medium' | 'High' | 'Critical';

@@ -13,6 +13,8 @@ import {
   Car,
   AlertCircle,
   RotateCcw,
+  MessageCircle,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   ChatMessage,
@@ -31,6 +33,8 @@ interface ChatAreaProps {
   onOpenMediaModal: () => void;
   onOpenVehicleModal: () => void;
   onRetryMessage?: (message: ChatMessage) => void;
+  onRequestDiagnosis: () => Promise<void>;
+  incomingAttachment?: MediaAttachment | null;
   error?: string | null;
   onClearError?: () => void;
   isBooked?: boolean;
@@ -45,6 +49,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   onOpenMediaModal,
   onOpenVehicleModal,
   onRetryMessage,
+  onRequestDiagnosis,
+  incomingAttachment,
   error,
   onClearError,
   isBooked = false,
@@ -58,6 +64,16 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (incomingAttachment) {
+      setPendingAttachments((previous) => (
+        previous.some((attachment) => attachment.id === incomingAttachment.id)
+          ? previous
+          : [...previous, incomingAttachment]
+      ));
+    }
+  }, [incomingAttachment]);
 
   const handleSend = async () => {
     const trimmed = inputText.trim();
@@ -89,8 +105,29 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
     inputRef.current?.focus();
   };
 
+  const starterPrompts = ['Car won’t start', 'Engine noise', 'Brake problem', 'Warning light'];
+
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-900/60 overflow-hidden relative">
+    <div className="flex-1 flex flex-col h-full bg-slate-900/60 overflow-hidden relative chat-surface">
+      <div className="px-4 sm:px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/15">
+            <Wrench className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <strong className="text-sm text-white truncate">AI Car Mechanic</strong>
+              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Online
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-500">Senior Vehicle Assistant · Delhi NCR</span>
+          </div>
+        </div>
+        <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-500">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Private conversation
+        </div>
+      </div>
       {/* Vehicle Context Ribbon */}
       <div className="bg-slate-950/80 px-4 py-2 border-b border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
         <div className="flex items-center gap-2 truncate">
@@ -100,7 +137,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             <strong className="text-slate-200">
               {vehicle.year} {vehicle.make} {vehicle.model}
             </strong>{' '}
-            ({vehicle.mileage} miles)
+            ({vehicle.mileage} km)
           </span>
         </div>
         <button
@@ -113,16 +150,40 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
       {/* Messages Stream */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4">
+        {messages.length > 0 && (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onRequestDiagnosis}
+              disabled={isLoading}
+              className="text-xs font-semibold text-amber-400 border border-amber-500/40 hover:border-amber-400 hover:bg-amber-500/10 disabled:opacity-50 rounded-lg px-3 py-2 transition"
+            >
+              {isLoading ? 'Assessing vehicle...' : 'Run backend diagnosis'}
+            </button>
+          </div>
+        )}
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shadow-lg">
               <Wrench className="w-8 h-8" />
             </div>
             <div className="max-w-md space-y-1">
-              <h3 className="text-lg font-bold text-white">Start Your Diagnostic Consultation</h3>
+              <h3 className="text-lg font-bold text-white">What’s happening with your car?</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Describe your car's symptoms or upload photos of parts, dash warning lights, or an audio clip of unusual sounds.
+                Describe the symptom in your own words. I’ll ask the next useful question, not a full questionnaire.
               </p>
+              <div className="flex flex-wrap justify-center gap-2 pt-3">
+                {starterPrompts.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => handleSelectSuggestion(prompt)}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-700 bg-slate-800/70 hover:bg-amber-500/10 hover:border-amber-500/40 text-[11px] text-slate-300 hover:text-amber-300 transition"
+                  >
+                    <MessageCircle className="w-3 h-3 text-amber-400" /> {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
@@ -151,7 +212,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 <div className="w-2 h-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
               <span className="font-medium text-slate-300">
-                Dan Kowalski is evaluating mechanical symptoms & acoustic data...
+                AI Car Mechanic is thinking about your message...
               </span>
             </div>
           </div>
@@ -188,8 +249,11 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             {pendingAttachments.map((att) => (
               <div
                 key={att.id}
-                className="bg-slate-800 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl text-xs flex items-center gap-2 shadow-sm"
+                className="bg-slate-800 text-slate-200 border border-slate-700 px-2.5 py-2 rounded-xl text-xs flex items-center gap-2 shadow-sm"
               >
+                {att.type === 'image' && att.url ? (
+                  <img src={att.url} alt="Selected vehicle media" className="w-9 h-9 rounded-lg object-cover border border-slate-600" />
+                ) : null}
                 {att.type === 'image' && <Camera className="w-3.5 h-3.5 text-blue-400" />}
                 {att.type === 'audio' && <Volume2 className="w-3.5 h-3.5 text-amber-400" />}
                 {att.type === 'video' && <Film className="w-3.5 h-3.5 text-purple-400" />}
@@ -253,7 +317,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         </div>
 
         <div className="flex items-center justify-between text-[10px] text-slate-500 mt-2 px-2">
-          <span>Press Enter to send, Shift + Enter for new line</span>
+          <span>Enter to send · Shift + Enter for a new line</span>
           <span className="hidden sm:inline">
             ASE Master Tech Virtual Assistance • Certified Mechanical Logic
           </span>
