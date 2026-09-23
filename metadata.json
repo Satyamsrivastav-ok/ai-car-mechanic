@@ -1,0 +1,6 @@
+{
+  "name": "AI Car Mechanic",
+  "description": "Virtual ASE-certified automobile mechanic chatbot for intelligent car problem troubleshooting, media analysis, diagnostics, and repair booking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
